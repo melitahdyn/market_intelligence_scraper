@@ -1,4 +1,11 @@
 streamlit
+pandas
+numpy
+gspread
+google-auth
+openpyxl
+beautifulsoup4
+requests
+lxml
 selenium
 webdriver-manager
-pandas
