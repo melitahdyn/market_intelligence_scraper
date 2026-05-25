@@ -261,15 +261,28 @@ def scrape_google_maps(
             f"{encoded_query}"
         )
 
+        
+        print("STEP A")
+
         driver.get(url)
 
+        print("STEP B")
+        
         time.sleep(6)
+        
+        print("STEP C")
+        
         print("TITLE:", driver.title)
         print("URL:", driver.current_url)
-        driver.save_screenshot("/tmp/maps_debug.png")
-        print(driver.page_source[:1000])
+        
+        html = driver.page_source
+        print(html[:1000])
+        
+        print("STEP D")
         
         close_cookie_popup(driver)
+        
+        print("STEP E")
 
         # ==================================
         # Kalau langsung detail page
