@@ -6,7 +6,6 @@ import urllib.parse
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -27,7 +26,9 @@ PHONE_REGEX = r"(\+62|0)\d[\d\s\-]{7,}"
 def setup_driver():
     options = Options()
 
-    # STREAMLIT CLOUD / DEPLOY FIX
+    # STREAMLIT CLOUD FIX
+    options.binary_location = "/usr/bin/chromium"
+
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
@@ -35,45 +36,36 @@ def setup_driver():
     options.add_argument("--window-size=1920,1080")
 
     options.add_argument("--disable-blink-features=AutomationControlled")
+
     options.add_experimental_option(
-        "excludeSwitches",
-        ["enable-automation"]
+        "excludeSwitches", ["enable-automation"]
     )
     options.add_experimental_option(
-        "useAutomationExtension",
-        False
+        "useAutomationExtension", False
     )
 
     options.add_argument(
-        f"user-agent={random.choice(USER_AGENTS)}"
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
     )
 
-    prefs = {
-        "profile.managed_default_content_settings.images": 2
-    }
-    options.add_experimental_option("prefs", prefs)
+    service = Service("/usr/bin/chromedriver")
 
     driver = webdriver.Chrome(
-        service=Service(
-            ChromeDriverManager().install()
-        ),
+        service=service,
         options=options
     )
 
     driver.set_page_load_timeout(60)
-    driver.set_script_timeout(60)
 
     driver.execute_script("""
-        Object.defineProperty(
-            navigator,
-            'webdriver',
-            {get: () => undefined}
-        )
+        Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined
+        })
     """)
 
     return driver
-
-
 # ======================================================
 # CLOSE COOKIE
 # ======================================================
@@ -271,8 +263,12 @@ def scrape_google_maps(
 
         driver.get(url)
 
-        time.sleep(5)
-
+        time.sleep(6)
+        print("TITLE:", driver.title)
+        print("URL:", driver.current_url)
+        driver.save_screenshot("/tmp/maps_debug.png")
+        print(driver.page_source[:1000])
+        
         close_cookie_popup(driver)
 
         # ==================================
