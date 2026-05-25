@@ -10,3 +10,5 @@ requests
 lxml
 selenium
 webdriver-manager
+selenium==4.25.0
+webdriver-manager==4.0.2
