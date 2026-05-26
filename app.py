@@ -390,11 +390,20 @@ def enrich_contacts(df, progress_callback=None):
 # ============================================================
 def upload_to_sheets(df):
     try:
+        import json
+        from google.oauth2.service_account import Credentials
+        import gspread
+
         scope = [
             "https://spreadsheets.google.com/feeds",
             "https://www.googleapis.com/auth/drive"
         ]
-        creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+
+        # ← Baca dari st.secrets, bukan dari file
+        creds_dict = dict(st.secrets["gcp_service_account"])
+        creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+        
+        creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
         client = gspread.authorize(creds)
         spreadsheet = client.open_by_key("1LjeNfv0Must7Tqs0GLTs4nW40UxiKOQwtjNGYCij_tU")
         sheet = spreadsheet.sheet1
@@ -714,7 +723,7 @@ with tab_scrape:
         # START BUTTON
         col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
         with col_btn2:
-            start_btn = st.button("🚀  MULAI SCRAPING", use_container_width=True, type="primary")
+            start_btn = st.button("🚀  MULAI SCRAPING", width='stretch', type="primary")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -955,11 +964,11 @@ with tab_scrape:
                         data=csv_data,
                         file_name=f"scraping_{input_keyword.replace(' ','_')}_{time.strftime('%Y%m%d_%H%M')}.csv",
                         mime="text/csv",
-                        use_container_width=True
+                        width='stretch'
                     )
 
                 # Dataframe
-                st.dataframe(df_upload, use_container_width=True, height=450)
+                st.dataframe(df_upload, width='stretch', height=450)
 
             else:
                 st.warning("⚠️ Tidak ada data ditemukan. Coba ubah keyword atau perluas area pencarian.")
@@ -1021,7 +1030,7 @@ with tab_excel:
 
             # Preview
             st.markdown("**Preview Data:**")
-            st.dataframe(df_input.head(5), use_container_width=True)
+            st.dataframe(df_input.head(5), width='stretch')
 
             # Column mapping
             st.markdown("---")
@@ -1078,7 +1087,7 @@ with tab_excel:
             with col_ebtn2:
                 start_excel_btn = st.button(
                     "🔍  MULAI ENRICHMENT",
-                    use_container_width=True,
+                    width='stretch',
                     type="primary",
                     key="excel_start"
                 )
@@ -1229,7 +1238,7 @@ with tab_excel:
                             data=csv_excel,
                             file_name=f"enriched_{time.strftime('%Y%m%d_%H%M')}.csv",
                             mime="text/csv",
-                            use_container_width=True
+                            width='stretch'
                         )
 
                     # Upload to sheets
@@ -1244,7 +1253,7 @@ with tab_excel:
                         df_sheets["Link Google Maps"] = "N/A"
                         upload_to_sheets(df_sheets)
 
-                    st.dataframe(df_work, use_container_width=True, height=450)
+                    st.dataframe(df_work, width='stretch', height=450)
 
     else:
         st.markdown("""
