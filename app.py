@@ -405,8 +405,8 @@ def upload_to_sheets(df):
         
         creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
         client = gspread.authorize(creds)
-        spreadsheet = client.open_by_key("1LjeNfv0Must7Tqs0GLTs4nW40UxiKOQwtjNGYCij_tU")
-        sheet = spreadsheet.sheet1
+        spreadsheet = client.open_by_key("1L6__A7Dm-q91dzIKBs40I-8UhDe8pvloaWTjslTeY9k")
+        sheet = spreadsheet.worksheet("SCRAPPING")
 
         expected_cols = [
             "Nama Perusahaan", "Segmentasi", "Wilayah (KOTA/KAB)", "Alamat",
