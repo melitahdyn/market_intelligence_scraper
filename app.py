@@ -409,16 +409,23 @@ def upload_to_sheets(df):
         sheet = spreadsheet.worksheet("SCRAPPING")
 
         expected_cols = [
-            "Nama Perusahaan", "Segmentasi", "Wilayah (KOTA/KAB)", "Alamat",
-            "Link Google Maps", "Nomor", "Email", "Linkedin/Instagram", "Web link"
+            "Nomor urut", "Nama Perusahaan", "Segmentasi", "Wilayah (KOTA/KAB)", "Alamat",
+            "Link Google Maps", "Nomor telp", "Email", "Linkedin/Instagram", "Web link"
         ]
-
+        
         df = df.copy()
-        df = df[expected_cols]
+        # Rename kolom "Nomor" → "Nomor telp" agar sesuai header spreadsheet
+        df = df.rename(columns={"Nomor": "Nomor telp"})
+        
+        data_cols = [c for c in expected_cols if c != "Nomor urut"]
+        for c in data_cols:
+            if c not in df.columns:
+                df[c] = "N/A"
+        df = df[data_cols]
         df = df.fillna("N/A").astype(str)
-
+        
         existing_values = sheet.get_all_values()
-
+        
         if not existing_values:
             sheet.append_row(expected_cols)
             existing_values = [expected_cols]
@@ -426,22 +433,27 @@ def upload_to_sheets(df):
             sheet.delete_rows(1)
             sheet.insert_row(expected_cols, 1)
             existing_values = sheet.get_all_values()
-
+        
         existing_keys = set()
         for row in existing_values[1:]:
-            nama = row[0].strip().lower() if len(row) > 0 else ""
-            alamat = row[3].strip().lower() if len(row) > 3 else ""
+            # index +1 karena ada kolom "Nomor urut" di posisi 0
+            nama   = row[1].strip().lower() if len(row) > 1 else ""
+            alamat = row[4].strip().lower() if len(row) > 4 else ""
             existing_keys.add(f"{nama}|{alamat}")
-
+        
+        # Hitung nomor urut lanjutan dari data yang sudah ada
+        last_no = len(existing_values) - 1  # jumlah baris data (tanpa header)
+        
         rows_to_append = []
         new_count = 0
         for _, r in df.iterrows():
             key = f"{str(r['Nama Perusahaan']).strip().lower()}|{str(r['Alamat']).strip().lower()}"
             if key not in existing_keys:
-                rows_to_append.append(r.tolist())
+                last_no += 1
+                rows_to_append.append([str(last_no)] + r.tolist())  # sisipkan nomor urut di depan
                 existing_keys.add(key)
                 new_count += 1
-
+        
         if not rows_to_append:
             st.info("⚠️ Tidak ada data baru (semua duplicate).")
             return True
