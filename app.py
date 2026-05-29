@@ -410,7 +410,7 @@ def upload_to_sheets(df):
 
         expected_cols = [
             "Nomor urut", "Nama Perusahaan", "Segmentasi", "Wilayah (KOTA/KAB)", "Alamat",
-            "Link Google Maps", "Nomor telp", "Email", "Linkedin/Instagram", "Web link"
+            "Link Google Maps", "Nomor", "Email", "Linkedin/Instagram", "Web link"
         ]
         
         df = df.copy()
@@ -429,15 +429,10 @@ def upload_to_sheets(df):
         if not existing_values:
             sheet.append_row(expected_cols)
             existing_values = [expected_cols]
-        elif existing_values[0] != expected_cols:
-            sheet.delete_rows(1)
-            sheet.insert_row(expected_cols, 1)
-            existing_values = sheet.get_all_values()
         
         existing_keys = set()
         for row in existing_values[1:]:
-            # index +1 karena ada kolom "Nomor urut" di posisi 0
-            nama   = row[1].strip().lower() if len(row) > 1 else ""
+            nama  = row[1].strip().lower() if len(row) > 1 else ""
             alamat = row[4].strip().lower() if len(row) > 4 else ""
             existing_keys.add(f"{nama}|{alamat}")
         
@@ -450,7 +445,7 @@ def upload_to_sheets(df):
             key = f"{str(r['Nama Perusahaan']).strip().lower()}|{str(r['Alamat']).strip().lower()}"
             if key not in existing_keys:
                 last_no += 1
-                rows_to_append.append([str(last_no)] + r.tolist())  # sisipkan nomor urut di depan
+                rows_to_append.append([""] + r.tolist())  # sisipkan nomor urut di depan
                 existing_keys.add(key)
                 new_count += 1
         
